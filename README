@@ -1,0 +1,55 @@
+# Ontology: Tiny Palantir for SMBs
+
+A generic, business-agnostic operational intelligence system. It uses **SQLite** as a graph store, **local embeddings** for semantic search, and an **LLM** for automated reasoning and action proposal.
+
+---
+
+### 🚀 Quick Start
+
+1. **Setup Environment**
+   ```bash
+   git clone https://github.com/ArthoPacini/ontology.git
+   cd ontology
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+2. **Configuration**
+   ```bash
+   cp .env.example .env
+   # Add your OPENROUTER_API_KEY to .env
+   ```
+
+3. **Run & Seed**
+   ```bash
+   # Terminal 1: Start the server
+   python main.py
+
+   # Terminal 2: Seed the example data
+   python seed.py
+   ```
+
+---
+
+### 🧠 Core Concept
+
+- **Graph Store:** Uses recursive CTEs in SQLite to traverse entities and relationships.
+- **Semantic Brain:** Uses `sqlite-vec` + local `sentence-transformers` for context-aware searches.
+- **Reactive Loop:** When an event is ingested, the system extracts entities, traverses the graph for context, and proposes actions.
+- **Decision Lineage:** Every thought, extraction, and action is audited and indexed for learning.
+
+### 🛠 Example Query
+
+After seeding, you can test the reasoning by sending a raw event:
+
+```bash
+curl -X POST http://localhost:8000/ingest/raw \
+     -H "Content-Type: application/json" \
+     -d '{"source":"HR", "content": "João Silva suffered an accident and is hospitalized"}'
+```
+
+The system will:
+1. Identify `João Silva` via semantic search.
+2. Find everything he is connected to (Vehicles, Orders, Routes).
+3. Propose actions (Reassigning his van, notifying affected clients, etc.).
