@@ -1,0 +1,69 @@
+business_name: "FastDeliver Co"
+business_type: "Local Delivery Company"
+
+entity_types:
+  - Driver
+  - Vehicle
+  - Order
+  - Client
+  - Route
+  - Supplier
+
+relationship_types:
+  - { name: OPERATES, from: Driver, to: Vehicle }
+  - { name: CARRIES, from: Vehicle, to: Order }
+  - { name: DESTINED_FOR, from: Order, to: Client }
+  - { name: SUPPLIED_BY, from: Order, to: Supplier }
+  - { name: ASSIGNED_TO, from: Order, to: Route }
+  - { name: DRIVES, from: Driver, to: Route }
+
+extraction_hints:
+  - "Treat truck plates, van numbers, and vehicle names as Vehicle entities"
+  - "Invoice numbers and waybill codes are Order entities"
+  - "Driver names (e.g., João, Carlos, Maria) are Driver entities"
+  - "Client names and company names are Client entities"
+  - "Route identifiers like 'North Route', 'Downtown Circuit' are Route entities"
+  - "Supplier names are Supplier entities"
+  - "When a driver 'uses' or 'drives' a vehicle, that is an OPERATES relationship"
+  - "When an order is 'loaded on' or 'carried by' a vehicle, that is a CARRIES relationship"
+
+# Reaction configuration — tells the reasoning engine how to analyze events
+reaction_hints:
+  - "When a vehicle breaks down, identify all orders currently carried by it and their client destinations"
+  - "When a driver is unavailable, check which vehicles and routes are affected"
+  - "Prioritize client notifications for time-sensitive or perishable deliveries"
+  - "When supply chain disruptions occur, trace which clients downstream are impacted"
+  - "Consider reassignment options: which other vehicles/drivers could cover the affected route"
+
+# Available actions the system can propose in reactions
+# Another system will poll pending reactions and execute these
+actions:
+  - name: notify_operations_manager
+    channel: email
+    description: "Send urgent notification to the operations manager about a critical event"
+    parameters:
+      to: "ops-manager@fastdeliver.co"
+
+  - name: alert_driver
+    channel: sms
+    description: "Send SMS alert to a driver about schedule changes or reassignment"
+    parameters:
+      phone_field: "driver's registered phone"
+
+  - name: notify_client
+    channel: email
+    description: "Notify a client about delivery delays or schedule changes"
+    parameters:
+      to_field: "client's registered email"
+
+  - name: reassign_vehicle
+    channel: internal_api
+    description: "Request vehicle reassignment through the fleet management system"
+    parameters:
+      endpoint: "/fleet/reassign"
+
+  - name: log_maintenance
+    channel: internal_api
+    description: "Create a maintenance ticket for a vehicle"
+    parameters:
+      endpoint: "/fleet/maintenance"
